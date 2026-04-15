@@ -1,0 +1,71 @@
+[package]
+name = "fast-time-server"
+version = "1.5.0"
+edition = "2021"
+rust-version = "1.75"
+authors = ["Mihai Criveti", "Manav Gupta"]
+license = "Apache-2.0"
+description = "Ultra-fast MCP server exposing time-related tools"
+
+[dependencies]
+# Web framework
+axum = { version = "0.7", features = ["macros"] }
+tokio = { version = "1", features = ["full"] }
+tower = { version = "0.4", features = ["util"] }
+tower-http = { version = "0.5", features = ["cors", "trace"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Time handling
+chrono = { version = "0.4", features = ["serde"] }
+chrono-tz = "0.9"
+
+# HTTP and SSE
+hyper = { version = "1", features = ["full"] }
+futures = "0.3"
+
+# CLI
+clap = { version = "4", features = ["derive", "env"] }
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Error handling
+anyhow = "1"
+thiserror = "1"
+
+# Async utilities
+async-stream = "0.3"
+
+# Release profile - Maximum performance optimizations
+[profile.release]
+opt-level = 3              # Maximum optimization
+lto = "fat"                # Fat Link Time Optimization (slower compile, faster runtime)
+codegen-units = 1          # Single codegen unit for better optimization
+strip = true               # Strip symbols for smaller binary
+panic = "abort"            # Abort on panic (removes unwinding code)
+incremental = false        # Disable incremental compilation for better optimization
+overflow-checks = false    # Disable overflow checks for performance
+debug = false              # No debug info
+debug-assertions = false   # Disable debug assertions
+rpath = false              # No rpath
+
+# Dev profile - Faster compilation for development
+[profile.dev]
+opt-level = 0              # No optimization for fast compilation
+debug = true               # Full debug info
+incremental = true         # Enable incremental compilation
+overflow-checks = true     # Keep overflow checks in dev
+debug-assertions = true    # Keep debug assertions in dev
+
+# Dev-opt profile - Optimized development builds
+# Use with: cargo build --profile dev-opt
+[profile.dev-opt]
+inherits = "dev"
+opt-level = 2              # Some optimization while keeping reasonable compile times
+debug = true               # Keep debug info
+incremental = true         # Enable incremental compilation
+overflow-checks = true     # Keep safety checks
