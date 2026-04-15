@@ -1,0 +1,15 @@
+# Rust Project Rules
+
+## 1. Toolchain & Edition
+* **Edition:** MUST use **Rust 2024**. Do not downgrade to 2021 or earlier.
+* **Task Runners:** * The `Makefile` is a wrapper for `justfile`. 
+    * **DO NOT** modify the `Makefile`. 
+    * If new tasks are needed, add them to the `justfile`.
+
+## 2. Testing Architecture
+* **Location:** All integration tests MUST be located in the `/tests` directory.
+* **Granularity:** Follow a "One Function, One File" rule.
+    * Each test file must contain exactly **one** `#[test]` or `#[tokio::test]` function.
+    * The **filename** must match the **test function name** exactly (e.g., `tests/process_order.rs` contains `fn process_order()`).
+* **Helpers:** Private helper functions within these test files are permitted, but they should serve only the primary test function in that file.
+* **Rust functionality** should strictly follow the go functionality.
