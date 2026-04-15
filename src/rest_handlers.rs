@@ -4,6 +4,7 @@
 // Copyright 2025
 // SPDX-License-Identifier: Apache-2.0
 
+use crate::AppState;
 use axum::{
     extract::{Path, Query},
     http::StatusCode,
@@ -12,7 +13,6 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use crate::AppState;
 
 #[derive(Serialize)]
 struct TimeResponse {
@@ -32,12 +32,12 @@ async fn handle_get_time(
     Query(params): Query<TimeQuery>,
 ) -> Result<Json<TimeResponse>, StatusCode> {
     let timezone = params.timezone.unwrap_or_else(|| "UTC".to_string());
-    
+
     // Get current time
     let tz: chrono_tz::Tz = timezone.parse().map_err(|_| StatusCode::BAD_REQUEST)?;
     let now = chrono::Utc::now().with_timezone(&tz);
     let utc = chrono::Utc::now();
-    
+
     Ok(Json(TimeResponse {
         time: now.to_rfc3339(),
         timezone,
@@ -54,7 +54,7 @@ async fn handle_get_time_with_path(
     let tz: chrono_tz::Tz = timezone.parse().map_err(|_| StatusCode::BAD_REQUEST)?;
     let now = chrono::Utc::now().with_timezone(&tz);
     let utc = chrono::Utc::now();
-    
+
     Ok(Json(TimeResponse {
         time: now.to_rfc3339(),
         timezone,
@@ -95,7 +95,7 @@ async fn handle_api_docs() -> axum::response::Html<String> {
     </script>
 </body>
 </html>"#;
-    
+
     axum::response::Html(html.to_string())
 }
 
@@ -115,25 +115,57 @@ async fn handle_execute_prompt(
 ) -> Result<Json<serde_json::Value>, StatusCode> {
     let prompt_text = match name.as_str() {
         "compare_timezones" => {
-            let timezones = payload.arguments.get("timezones").map(|s| s.as_str()).unwrap_or("");
+            let timezones = payload
+                .arguments
+                .get("timezones")
+                .map(|s| s.as_str())
+                .unwrap_or("");
             let reference_time = payload.arguments.get("reference_time").map(|s| s.as_str());
             crate::prompts::generate_compare_timezones_prompt(timezones, reference_time)
         }
         "schedule_meeting" => {
-            let participants = payload.arguments.get("participants").map(|s| s.as_str()).unwrap_or("");
+            let participants = payload
+                .arguments
+                .get("participants")
+                .map(|s| s.as_str())
+                .unwrap_or("");
             let duration = payload.arguments.get("duration").map(|s| s.as_str());
             let preferred_hours = payload.arguments.get("preferred_hours").map(|s| s.as_str());
             let date_range = payload.arguments.get("date_range").map(|s| s.as_str());
-            crate::prompts::generate_schedule_meeting_prompt(participants, duration, preferred_hours, date_range)
+            crate::prompts::generate_schedule_meeting_prompt(
+                participants,
+                duration,
+                preferred_hours,
+                date_range,
+            )
         }
         "convert_time_detailed" => {
-            let time = payload.arguments.get("time").map(|s| s.as_str()).unwrap_or("");
-            let from_timezone = payload.arguments.get("from_timezone").map(|s| s.as_str()).unwrap_or("");
-            let to_timezones = payload.arguments.get("to_timezones").map(|s| s.as_str()).unwrap_or("");
-            let include_context = payload.arguments.get("include_context")
+            let time = payload
+                .arguments
+                .get("time")
+                .map(|s| s.as_str())
+                .unwrap_or("");
+            let from_timezone = payload
+                .arguments
+                .get("from_timezone")
+                .map(|s| s.as_str())
+                .unwrap_or("");
+            let to_timezones = payload
+                .arguments
+                .get("to_timezones")
+                .map(|s| s.as_str())
+                .unwrap_or("");
+            let include_context = payload
+                .arguments
+                .get("include_context")
                 .and_then(|s| s.parse::<bool>().ok())
                 .unwrap_or(false);
-            crate::prompts::generate_convert_time_detailed_prompt(time, from_timezone, to_timezones, include_context)
+            crate::prompts::generate_convert_time_detailed_prompt(
+                time,
+                from_timezone,
+                to_timezones,
+                include_context,
+            )
         }
         _ => {
             return Err(StatusCode::NOT_FOUND);
@@ -158,7 +190,7 @@ async fn handle_get_resource(
         "business-hours" => crate::resources::get_business_hours(),
         _ => return Err(StatusCode::NOT_FOUND),
     };
-    
+
     Ok(Json(resource))
 }
 
@@ -169,6 +201,9 @@ pub fn create_rest_routes() -> Router<AppState> {
         .route("/api/v1/time/:timezone", get(handle_get_time_with_path))
         .route("/api/v1/openapi.json", get(handle_openapi_spec))
         .route("/api/v1/docs", get(handle_api_docs))
-        .route("/api/v1/prompts/:name/execute", axum::routing::post(handle_execute_prompt))
+        .route(
+            "/api/v1/prompts/:name/execute",
+            axum::routing::post(handle_execute_prompt),
+        )
         .route("/api/v1/resources/:uri", get(handle_get_resource))
 }

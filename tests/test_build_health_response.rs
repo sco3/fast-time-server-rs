@@ -8,19 +8,28 @@ fn test_build_health_response() {
     let response = build_health_response(0);
     assert_eq!(response.get("status").unwrap().as_str().unwrap(), "healthy");
     assert_eq!(response.get("uptime_seconds").unwrap().as_u64().unwrap(), 0);
-    
+
     let response = build_health_response(42);
     assert_eq!(response.get("status").unwrap().as_str().unwrap(), "healthy");
-    assert_eq!(response.get("uptime_seconds").unwrap().as_u64().unwrap(), 42);
-    
+    assert_eq!(
+        response.get("uptime_seconds").unwrap().as_u64().unwrap(),
+        42
+    );
+
     let response = build_health_response(3600); // 1 hour
     assert_eq!(response.get("status").unwrap().as_str().unwrap(), "healthy");
-    assert_eq!(response.get("uptime_seconds").unwrap().as_u64().unwrap(), 3600);
-    
+    assert_eq!(
+        response.get("uptime_seconds").unwrap().as_u64().unwrap(),
+        3600
+    );
+
     let response = build_health_response(86400); // 1 day
     assert_eq!(response.get("status").unwrap().as_str().unwrap(), "healthy");
-    assert_eq!(response.get("uptime_seconds").unwrap().as_u64().unwrap(), 86400);
-    
+    assert_eq!(
+        response.get("uptime_seconds").unwrap().as_u64().unwrap(),
+        86400
+    );
+
     // Verify JSON structure has exactly 2 fields
     let response = build_health_response(100);
     let response_obj = response.as_object().unwrap();

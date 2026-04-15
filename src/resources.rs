@@ -50,7 +50,7 @@ pub fn get_timezone_info() -> serde_json::Value {
 pub fn get_current_world_times() -> serde_json::Value {
     use chrono::Utc;
     use chrono_tz::Tz;
-    
+
     let cities = vec![
         ("New York", "America/New_York"),
         ("Los Angeles", "America/Los_Angeles"),
@@ -60,17 +60,20 @@ pub fn get_current_world_times() -> serde_json::Value {
         ("Sydney", "Australia/Sydney"),
         ("Dubai", "Asia/Dubai"),
     ];
-    
+
     let now = Utc::now();
     let mut times = serde_json::Map::new();
-    
+
     for (city, tz_str) in cities {
         if let Ok(tz) = tz_str.parse::<Tz>() {
             let local_time = now.with_timezone(&tz);
-            times.insert(city.to_string(), json!(local_time.format("%Y-%m-%d %H:%M:%S %Z").to_string()));
+            times.insert(
+                city.to_string(),
+                json!(local_time.format("%Y-%m-%d %H:%M:%S %Z").to_string()),
+            );
         }
     }
-    
+
     json!({
         "last_updated": now.to_rfc3339(),
         "times": times

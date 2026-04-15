@@ -10,11 +10,11 @@ fn test_handle_tool_call_convert_time() {
         "source_timezone": "UTC",
         "target_timezone": "America/New_York"
     });
-    
+
     let result = handle_tool_call("convert_time", &args);
-    
+
     assert!(result.is_ok(), "Should successfully call convert_time");
-    
+
     let value = result.unwrap();
     assert!(value.is_string(), "Result should be a string");
 }

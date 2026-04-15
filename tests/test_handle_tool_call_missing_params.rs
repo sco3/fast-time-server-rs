@@ -10,9 +10,12 @@ fn test_handle_tool_call_missing_params() {
         "source_timezone": "UTC",
         "target_timezone": "America/New_York"
     });
-    
+
     let result = handle_tool_call("convert_time", &args);
-    
-    assert!(result.is_err(), "Should return error for missing time parameter");
+
+    assert!(
+        result.is_err(),
+        "Should return error for missing time parameter"
+    );
     assert!(result.unwrap_err().contains("time parameter is required"));
 }
