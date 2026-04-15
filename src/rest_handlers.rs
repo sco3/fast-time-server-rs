@@ -40,7 +40,7 @@ async fn handle_get_time(
     
     Ok(Json(TimeResponse {
         time: now.to_rfc3339(),
-        timezone: timezone,
+        timezone,
         unix: now.timestamp(),
         utc: utc.to_rfc3339(),
     }))
@@ -57,7 +57,7 @@ async fn handle_get_time_with_path(
     
     Ok(Json(TimeResponse {
         time: now.to_rfc3339(),
-        timezone: timezone,
+        timezone,
         unix: now.timestamp(),
         utc: utc.to_rfc3339(),
     }))
