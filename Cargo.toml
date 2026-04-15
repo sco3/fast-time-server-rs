@@ -53,20 +53,6 @@ debug = false              # No debug info
 debug-assertions = false   # Disable debug assertions
 rpath = false              # No rpath
 
-# Alternative release profile with even more aggressive optimizations
-# Use with: cargo build --profile release-max
-[profile.release-max]
-inherits = "release"
-opt-level = 3
-lto = "fat"
-codegen-units = 1
-panic = "abort"
-strip = true
-incremental = false
-overflow-checks = false
-debug = false
-debug-assertions = false
-
 # Dev profile - Faster compilation for development
 [profile.dev]
 opt-level = 0              # No optimization for fast compilation
