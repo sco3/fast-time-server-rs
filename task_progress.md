@@ -1,0 +1,3 @@
+- [ ] Examine Rust project structure (Cargo.toml and src/main.rs)
+- [ ] Compile the Rust project using cargo build
+- [ ] Verify compilation was successful

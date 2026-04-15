@@ -1,0 +1,29 @@
+Integration Test Summary
+========================
+Date: Wed Apr 15 08:17:42 PM IST 2026
+Server: fast-time-server Go implementation
+Port: 8085
+
+Tests Executed:
+1. Health check endpoint
+2. Version endpoint
+3. MCP Initialize
+4. List tools
+5. List resources
+6. List prompts
+7. Get system time (UTC)
+8. Get system time (New York)
+9. Get system time (Tokyo)
+10. Convert time (UTC to Los Angeles)
+11. Read timezone info resource
+12. Read world times resource
+13. Get compare timezones prompt
+14. Error handling - invalid tool
+15. Error handling - invalid timezone
+
+All responses have been saved to individual JSON files in this directory.
+These can be used for:
+- Validating API responses
+- Creating test fixtures
+- Comparing with other implementations
+- Regression testing
