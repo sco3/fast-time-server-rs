@@ -37,8 +37,7 @@ fn test_business_hours_working_days() {
             working_days
                 .iter()
                 .any(|v| v.as_str() == Some(expected_day)),
-            "Should contain {}",
-            expected_day
+            "Should contain {expected_day}"
         );
     }
 

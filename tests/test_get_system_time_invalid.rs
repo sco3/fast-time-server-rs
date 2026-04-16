@@ -11,7 +11,6 @@ fn test_get_system_time_invalid() {
     let error = result.unwrap_err();
     assert!(
         error.contains("Invalid timezone"),
-        "Error should mention invalid timezone: {}",
-        error
+        "Error should mention invalid timezone: {error}"
     );
 }

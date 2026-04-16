@@ -15,14 +15,12 @@ fn test_get_system_time_utc() {
     let parsed = DateTime::parse_from_rfc3339(&time_str);
     assert!(
         parsed.is_ok(),
-        "Should be valid RFC3339 format: {}",
-        time_str
+        "Should be valid RFC3339 format: {time_str}"
     );
 
     // Verify it contains UTC timezone indicator
     assert!(
         time_str.ends_with('Z') || time_str.contains("+00:00"),
-        "UTC time should end with Z or +00:00: {}",
-        time_str
+        "UTC time should end with Z or +00:00: {time_str}"
     );
 }

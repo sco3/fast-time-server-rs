@@ -26,7 +26,7 @@ fn test_get_timezone_info() {
     // Verify timezones array
     let timezones = info
         .get("timezones")
-        .and_then(|v| v.as_array())
+        .and_then(serde_json::Value::as_array)
         .expect("timezones should be an array");
 
     assert_eq!(timezones.len(), 3, "Should have 3 timezones");
@@ -34,28 +34,28 @@ fn test_get_timezone_info() {
     // Verify first timezone (America/New_York)
     let ny = &timezones[0];
     assert_eq!(
-        ny.get("id").and_then(|v| v.as_str()).unwrap(),
+        ny.get("id").and_then(serde_json::Value::as_str).unwrap(),
         "America/New_York"
     );
     assert_eq!(
-        ny.get("name").and_then(|v| v.as_str()).unwrap(),
+        ny.get("name").and_then(serde_json::Value::as_str).unwrap(),
         "Eastern Time"
     );
-    assert_eq!(ny.get("offset").and_then(|v| v.as_str()).unwrap(), "-05:00");
-    assert!(ny.get("dst").and_then(|v| v.as_bool()).unwrap());
+    assert_eq!(ny.get("offset").and_then(serde_json::Value::as_str).unwrap(), "-05:00");
+    assert!(ny.get("dst").and_then(serde_json::Value::as_bool).unwrap());
     assert_eq!(
-        ny.get("abbreviation").and_then(|v| v.as_str()).unwrap(),
+        ny.get("abbreviation").and_then(serde_json::Value::as_str).unwrap(),
         "EST/EDT"
     );
     assert_eq!(
-        ny.get("population").and_then(|v| v.as_i64()).unwrap(),
-        141000000
+        ny.get("population").and_then(serde_json::Value::as_i64).unwrap(),
+        141_000_000
     );
 
     // Verify timezone_groups
     let groups = info
         .get("timezone_groups")
-        .and_then(|v| v.as_object())
+        .and_then(serde_json::Value::as_object)
         .expect("timezone_groups should be an object");
 
     assert!(

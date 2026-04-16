@@ -6,7 +6,7 @@
 
 use crate::AppState;
 use axum::{
-    extract::{Path, Query},
+    extract::{Path, Query, State},
     http::StatusCode,
     routing::get,
     Json, Router,
@@ -29,12 +29,13 @@ struct TimeQuery {
 
 /// Handle GET /api/v1/time
 async fn handle_get_time(
+    State(state): State<AppState>,
     Query(params): Query<TimeQuery>,
 ) -> Result<Json<TimeResponse>, StatusCode> {
     let timezone = params.timezone.unwrap_or_else(|| "UTC".to_string());
 
-    // Get current time
-    let tz: chrono_tz::Tz = timezone.parse().map_err(|_| StatusCode::BAD_REQUEST)?;
+    // Get timezone from cache
+    let tz = state.load_timezone(&timezone).await.map_err(|_| StatusCode::BAD_REQUEST)?;
     let now = chrono::Utc::now().with_timezone(&tz);
     let utc = chrono::Utc::now();
 
@@ -48,10 +49,11 @@ async fn handle_get_time(
 
 /// Handle GET /api/v1/time/{timezone}
 async fn handle_get_time_with_path(
+    State(state): State<AppState>,
     Path(timezone): Path<String>,
 ) -> Result<Json<TimeResponse>, StatusCode> {
-    // Get current time
-    let tz: chrono_tz::Tz = timezone.parse().map_err(|_| StatusCode::BAD_REQUEST)?;
+    // Get timezone from cache
+    let tz = state.load_timezone(&timezone).await.map_err(|_| StatusCode::BAD_REQUEST)?;
     let now = chrono::Utc::now().with_timezone(&tz);
     let utc = chrono::Utc::now();
 
@@ -118,20 +120,18 @@ async fn handle_execute_prompt(
             let timezones = payload
                 .arguments
                 .get("timezones")
-                .map(|s| s.as_str())
-                .unwrap_or("");
-            let reference_time = payload.arguments.get("reference_time").map(|s| s.as_str());
+                .map_or("", |s| s.as_str());
+            let reference_time = payload.arguments.get("reference_time").map(String::as_str);
             crate::prompts::generate_compare_timezones_prompt(timezones, reference_time)
         }
         "schedule_meeting" => {
             let participants = payload
                 .arguments
                 .get("participants")
-                .map(|s| s.as_str())
-                .unwrap_or("");
-            let duration = payload.arguments.get("duration").map(|s| s.as_str());
-            let preferred_hours = payload.arguments.get("preferred_hours").map(|s| s.as_str());
-            let date_range = payload.arguments.get("date_range").map(|s| s.as_str());
+                .map_or("", |s| s.as_str());
+            let duration = payload.arguments.get("duration").map(String::as_str);
+            let preferred_hours = payload.arguments.get("preferred_hours").map(String::as_str);
+            let date_range = payload.arguments.get("date_range").map(String::as_str);
             crate::prompts::generate_schedule_meeting_prompt(
                 participants,
                 duration,
@@ -143,18 +143,15 @@ async fn handle_execute_prompt(
             let time = payload
                 .arguments
                 .get("time")
-                .map(|s| s.as_str())
-                .unwrap_or("");
+                .map_or("", |s| s.as_str());
             let from_timezone = payload
                 .arguments
                 .get("from_timezone")
-                .map(|s| s.as_str())
-                .unwrap_or("");
+                .map_or("", |s| s.as_str());
             let to_timezones = payload
                 .arguments
                 .get("to_timezones")
-                .map(|s| s.as_str())
-                .unwrap_or("");
+                .map_or("", |s| s.as_str());
             let include_context = payload
                 .arguments
                 .get("include_context")
@@ -181,11 +178,12 @@ async fn handle_execute_prompt(
 
 /// Handle GET /api/v1/resources/:uri
 async fn handle_get_resource(
+    State(state): State<AppState>,
     Path(uri): Path<String>,
 ) -> Result<Json<serde_json::Value>, StatusCode> {
     let resource = match uri.as_str() {
         "timezone-info" => crate::resources::get_timezone_info(),
-        "current-world" => crate::resources::get_current_world_times(),
+        "current-world" => crate::resources::get_current_world_times_cached(&state).await,
         "time-formats" => crate::resources::get_time_formats(),
         "business-hours" => crate::resources::get_business_hours(),
         _ => return Err(StatusCode::NOT_FOUND),

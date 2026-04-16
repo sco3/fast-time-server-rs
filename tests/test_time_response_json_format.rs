@@ -17,7 +17,7 @@ fn test_time_response_json_format() {
     let response = TimeResponse {
         time: "2026-04-15T12:30:45+01:00".to_string(),
         timezone: "Europe/London".to_string(),
-        unix: 1776024645,
+        unix: 1_776_024_645,
         utc: "2026-04-15T11:30:45Z".to_string(),
     };
 

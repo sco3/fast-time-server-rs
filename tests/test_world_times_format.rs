@@ -21,18 +21,15 @@ fn test_world_times_format() {
         // Basic format validation: should contain date, time, and timezone
         assert!(
             time_str.contains('-'),
-            "{} time should contain date separator",
-            city
+            "{city} time should contain date separator"
         );
         assert!(
             time_str.contains(':'),
-            "{} time should contain time separator",
-            city
+            "{city} time should contain time separator"
         );
         assert!(
             time_str.len() > 10,
-            "{} time should have reasonable length",
-            city
+            "{city} time should have reasonable length"
         );
     }
 }

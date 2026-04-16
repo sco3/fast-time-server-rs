@@ -57,7 +57,6 @@ struct Args {
 pub struct AppState {
     auth_token: Option<String>,
     start_time: std::time::Instant,
-    #[allow(dead_code)]
     timezone_cache: Arc<RwLock<HashMap<String, chrono_tz::Tz>>>,
 }
 
@@ -68,6 +67,31 @@ impl AppState {
             start_time: std::time::Instant::now(),
             timezone_cache: Arc::new(RwLock::new(HashMap::new())),
         }
+    }
+
+    /// Load timezone with caching (similar to Go's `loadLocation` function)
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the timezone name is invalid.
+    pub async fn load_timezone(&self, name: &str) -> Result<chrono_tz::Tz, String> {
+        // Check cache first
+        {
+            let cache = self.timezone_cache.read().await;
+            if let Some(&tz) = cache.get(name) {
+                return Ok(tz);
+            }
+        }
+
+        // Parse and cache
+        let tz: chrono_tz::Tz = name
+            .parse()
+            .map_err(|_| format!("invalid timezone {name}"))?;
+        self.timezone_cache
+            .write()
+            .await
+            .insert(name.to_string(), tz);
+        Ok(tz)
     }
 }
 
@@ -96,7 +120,6 @@ async fn main() -> anyhow::Result<()> {
 fn init_logging(level: &str) {
     let filter = match level.to_lowercase().as_str() {
         "debug" => "debug",
-        "info" => "info",
         "warn" => "warn",
         "error" => "error",
         _ => "info",
@@ -107,6 +130,7 @@ fn init_logging(level: &str) {
         .init();
 }
 
+#[allow(clippy::too_many_lines)]
 async fn run_stdio_mode(_state: AppState) -> anyhow::Result<()> {
     use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 
@@ -190,10 +214,99 @@ async fn run_stdio_mode(_state: AppState) -> anyhow::Result<()> {
                     serde_json::json!({
                         "resources": [
                             {"uri": "timezone://info", "name": "Timezone Information", "mimeType": "application/json"},
-                            {"uri": "time://current/world", "name": "Current World Times", "mimeType": "application/json"}
+                            {"uri": "time://current/world", "name": "Current World Times", "mimeType": "application/json"},
+                            {"uri": "time://formats", "name": "Time Formats", "mimeType": "application/json"},
+                            {"uri": "time://business-hours", "name": "Business Hours", "mimeType": "application/json"}
                         ]
                     }),
                 )
+            }
+            Some("resources/read") => {
+                info!("Handling resources/read request");
+                let params = request.get("params");
+                if let Some(params_obj) = params {
+                    let resource_uri = params_obj
+                        .get("uri")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("");
+
+                    let response = match resource_uri {
+                        "timezone://info" => {
+                            info!("resource: timezone info requested");
+                            JsonRpcResponse::success(
+                                id,
+                                serde_json::json!({
+                                    "contents": [
+                                        {
+                                            "uri": resource_uri,
+                                            "mimeType": "application/json",
+                                            "text": serde_json::to_string(&resources::get_timezone_info()).unwrap_or_default()
+                                        }
+                                    ]
+                                }),
+                            )
+                        }
+                        "time://current/world" => {
+                            info!("resource: current world times requested");
+                            JsonRpcResponse::success(
+                                id,
+                                serde_json::json!({
+                                    "contents": [
+                                        {
+                                            "uri": resource_uri,
+                                            "mimeType": "application/json",
+                                            "text": serde_json::to_string(&resources::get_current_world_times()).unwrap_or_default()
+                                        }
+                                    ]
+                                }),
+                            )
+                        }
+                        "time://formats" => {
+                            info!("resource: time formats requested");
+                            JsonRpcResponse::success(
+                                id,
+                                serde_json::json!({
+                                    "contents": [
+                                        {
+                                            "uri": resource_uri,
+                                            "mimeType": "application/json",
+                                            "text": serde_json::to_string(&resources::get_time_formats()).unwrap_or_default()
+                                        }
+                                    ]
+                                }),
+                            )
+                        }
+                        "time://business-hours" => {
+                            info!("resource: business hours requested");
+                            JsonRpcResponse::success(
+                                id,
+                                serde_json::json!({
+                                    "contents": [
+                                        {
+                                            "uri": resource_uri,
+                                            "mimeType": "application/json",
+                                            "text": serde_json::to_string(&resources::get_business_hours()).unwrap_or_default()
+                                        }
+                                    ]
+                                }),
+                            )
+                        }
+                        _ => {
+                            JsonRpcResponse::error(
+                                id,
+                                -32000,
+                                format!("Resource not found: {resource_uri}"),
+                            )
+                        }
+                    };
+                    response
+                } else {
+                    JsonRpcResponse::error(
+                        id,
+                        -32600,
+                        "Invalid Request - missing params".to_string(),
+                    )
+                }
             }
             Some("prompts/list") => {
                 info!("Handling prompts/list request");
@@ -228,8 +341,8 @@ async fn run_stdio_mode(_state: AppState) -> anyhow::Result<()> {
                 }
             }
             Some(other_method) => {
-                info!("Unknown method: {}", other_method);
-                JsonRpcResponse::error(id, -32601, format!("Method not found: {}", other_method))
+                info!("Unknown method: {other_method}");
+                JsonRpcResponse::error(id, -32601, format!("Method not found: {other_method}"))
             }
             None => {
                 error!("Request missing 'method' field");
@@ -305,7 +418,7 @@ async fn handle_version() -> Json<serde_json::Value> {
 }
 
 async fn handle_jsonrpc(
-    State(_state): State<AppState>,
+    State(state): State<AppState>,
     Json(request): Json<serde_json::Value>,
 ) -> Result<Json<serde_json::Value>, StatusCode> {
     let method = request.get("method").and_then(|v| v.as_str()).unwrap_or("");
@@ -328,6 +441,59 @@ async fn handle_jsonrpc(
                 ]
             }),
         ),
+        "resources/list" => JsonRpcResponse::success(
+            id,
+            serde_json::json!({
+                "resources": [
+                    {"uri": "timezone://info", "name": "Timezone Information", "mimeType": "application/json"},
+                    {"uri": "time://current/world", "name": "Current World Times", "mimeType": "application/json"},
+                    {"uri": "time://formats", "name": "Time Formats", "mimeType": "application/json"},
+                    {"uri": "time://business-hours", "name": "Business Hours", "mimeType": "application/json"}
+                ]
+            }),
+        ),
+        "resources/read" => {
+            let params = request.get("params").ok_or(StatusCode::BAD_REQUEST)?;
+            let resource_uri = params
+                .get("uri")
+                .and_then(|v| v.as_str())
+                .ok_or(StatusCode::BAD_REQUEST)?;
+
+            let result = match resource_uri {
+                "timezone://info" => {
+                    info!("resource: timezone info requested");
+                    resources::get_timezone_info()
+                }
+                "time://current/world" => {
+                    info!("resource: current world times requested");
+                    resources::get_current_world_times_cached(&state).await
+                }
+                "time://formats" => {
+                    info!("resource: time formats requested");
+                    resources::get_time_formats()
+                }
+                "time://business-hours" => {
+                    info!("resource: business hours requested");
+                    resources::get_business_hours()
+                }
+                _ => {
+                    return Err(StatusCode::NOT_FOUND);
+                }
+            };
+
+            JsonRpcResponse::success(
+                id,
+                serde_json::json!({
+                    "contents": [
+                        {
+                            "uri": resource_uri,
+                            "mimeType": "application/json",
+                            "text": serde_json::to_string(&result).unwrap_or_default()
+                        }
+                    ]
+                }),
+            )
+        }
         "tools/call" => {
             let params = request.get("params").ok_or(StatusCode::BAD_REQUEST)?;
             let tool_name = params
@@ -337,12 +503,12 @@ async fn handle_jsonrpc(
             let default_args = serde_json::json!({});
             let arguments = params.get("arguments").unwrap_or(&default_args);
 
-            match tools::handle_tool_call(tool_name, arguments) {
+            match tools::handle_tool_call_cached(tool_name, arguments, &state).await {
                 Ok(result) => JsonRpcResponse::success(id, result),
                 Err(e) => JsonRpcResponse::error(id, -32000, e),
             }
         }
-        _ => JsonRpcResponse::error(id, -32601, format!("Method not found: {}", method)),
+        _ => JsonRpcResponse::error(id, -32601, format!("Method not found: {method}")),
     };
 
     Ok(Json(serde_json::json!(response)))

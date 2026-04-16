@@ -17,7 +17,7 @@ fn test_time_response_fields() {
     let response = TimeResponse {
         time: "2026-01-01T00:00:00Z".to_string(),
         timezone: "America/New_York".to_string(),
-        unix: 1735689600,
+        unix: 1_735_689_600,
         utc: "2026-01-01T05:00:00Z".to_string(),
     };
 

@@ -16,14 +16,12 @@ fn test_convert_time_basic() {
     let parsed = DateTime::parse_from_rfc3339(&converted);
     assert!(
         parsed.is_ok(),
-        "Should be valid RFC3339 format: {}",
-        converted
+        "Should be valid RFC3339 format: {converted}"
     );
 
     // Verify it contains timezone offset for New York
     assert!(
         converted.contains("-04:00") || converted.contains("-05:00"),
-        "Should have NY timezone offset: {}",
-        converted
+        "Should have NY timezone offset: {converted}"
     );
 }

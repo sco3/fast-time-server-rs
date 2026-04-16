@@ -4,9 +4,11 @@
 // Copyright 2025
 // SPDX-License-Identifier: Apache-2.0
 
+use crate::AppState;
 use serde_json::json;
 
 /// Get timezone information resource
+#[must_use]
 pub fn get_timezone_info() -> serde_json::Value {
     json!({
         "timezones": [
@@ -17,7 +19,7 @@ pub fn get_timezone_info() -> serde_json::Value {
                 "dst": true,
                 "abbreviation": "EST/EDT",
                 "major_cities": ["New York", "Toronto", "Montreal"],
-                "population": 141000000
+                "population": 141_000_000
             },
             {
                 "id": "Europe/London",
@@ -26,7 +28,7 @@ pub fn get_timezone_info() -> serde_json::Value {
                 "dst": true,
                 "abbreviation": "GMT/BST",
                 "major_cities": ["London", "Dublin", "Lisbon"],
-                "population": 67000000
+                "population": 67_000_000
             },
             {
                 "id": "Asia/Tokyo",
@@ -35,7 +37,7 @@ pub fn get_timezone_info() -> serde_json::Value {
                 "dst": false,
                 "abbreviation": "JST",
                 "major_cities": ["Tokyo", "Osaka", "Yokohama"],
-                "population": 127000000
+                "population": 127_000_000
             }
         ],
         "timezone_groups": {
@@ -46,7 +48,8 @@ pub fn get_timezone_info() -> serde_json::Value {
     })
 }
 
-/// Get current world times resource
+/// Get current world times resource (non-cached version)
+#[must_use]
 pub fn get_current_world_times() -> serde_json::Value {
     use chrono::Utc;
     use chrono_tz::Tz;
@@ -80,7 +83,41 @@ pub fn get_current_world_times() -> serde_json::Value {
     })
 }
 
+/// Get current world times resource (cached version)
+pub async fn get_current_world_times_cached(state: &AppState) -> serde_json::Value {
+    use chrono::Utc;
+
+    let cities = vec![
+        ("New York", "America/New_York"),
+        ("Los Angeles", "America/Los_Angeles"),
+        ("London", "Europe/London"),
+        ("Paris", "Europe/Paris"),
+        ("Tokyo", "Asia/Tokyo"),
+        ("Sydney", "Australia/Sydney"),
+        ("Dubai", "Asia/Dubai"),
+    ];
+
+    let now = Utc::now();
+    let mut times = serde_json::Map::new();
+
+    for (city, tz_str) in cities {
+        if let Ok(tz) = state.load_timezone(tz_str).await {
+            let local_time = now.with_timezone(&tz);
+            times.insert(
+                city.to_string(),
+                json!(local_time.format("%Y-%m-%d %H:%M:%S %Z").to_string()),
+            );
+        }
+    }
+
+    json!({
+        "last_updated": now.to_rfc3339(),
+        "times": times
+    })
+}
+
 /// Get time formats resource
+#[must_use]
 pub fn get_time_formats() -> serde_json::Value {
     json!({
         "input_formats": [
@@ -98,6 +135,7 @@ pub fn get_time_formats() -> serde_json::Value {
 }
 
 /// Get business hours resource
+#[must_use]
 pub fn get_business_hours() -> serde_json::Value {
     json!({
         "regions": {

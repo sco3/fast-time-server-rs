@@ -29,13 +29,11 @@ fn test_time_formats_structure() {
     for (key, value) in output_formats {
         assert!(
             value.is_string(),
-            "Output format '{}' should be a string",
-            key
+            "Output format '{key}' should be a string"
         );
         assert!(
             !value.as_str().unwrap().is_empty(),
-            "Output format '{}' should not be empty",
-            key
+            "Output format '{key}' should not be empty"
         );
     }
 }

@@ -17,7 +17,7 @@ fn test_time_response_serialization() {
     let response = TimeResponse {
         time: "2026-04-15T19:00:00+00:00".to_string(),
         timezone: "UTC".to_string(),
-        unix: 1776024000,
+        unix: 1_776_024_000,
         utc: "2026-04-15T19:00:00+00:00".to_string(),
     };
 
@@ -43,7 +43,7 @@ fn test_time_response_serialization() {
         "2026-04-15T19:00:00+00:00"
     );
     assert_eq!(parsed.get("timezone").unwrap().as_str().unwrap(), "UTC");
-    assert_eq!(parsed.get("unix").unwrap().as_i64().unwrap(), 1776024000);
+    assert_eq!(parsed.get("unix").unwrap().as_i64().unwrap(), 1_776_024_000);
     assert_eq!(
         parsed.get("utc").unwrap().as_str().unwrap(),
         "2026-04-15T19:00:00+00:00"

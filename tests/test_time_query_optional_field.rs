@@ -19,7 +19,7 @@ fn test_time_query_optional_field() {
     assert!(query.timezone.is_none(), "Null timezone should be None");
 
     // Test with empty object
-    let json_empty = r#"{}"#;
+    let json_empty = r"{}";
     let query: TimeQuery =
         serde_json::from_str(json_empty).expect("Should deserialize empty object");
 
