@@ -21,6 +21,6 @@ fn test_convert_time_formats() {
     for result in [result1, result2, result3] {
         let time_str = result.unwrap();
         let parsed = DateTime::parse_from_rfc3339(&time_str);
-        assert!(parsed.is_ok(), "Should produce valid RFC3339: {}", time_str);
+        assert!(parsed.is_ok(), "Should produce valid RFC3339: {time_str}");
     }
 }

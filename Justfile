@@ -83,8 +83,7 @@ fmt:
 
 # Run linter
 lint:
-    cargo clippy --tests -- -D warnings
-    golangci-lint run
+    cargo clippy --tests -- -D warnings -W clippy::pedantic
 
 # Install test coverage tools
 install-coverage-tools:

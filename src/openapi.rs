@@ -6,7 +6,8 @@
 
 use serde_json::json;
 
-/// Get OpenAPI specification for the REST API
+/// Get `OpenAPI` specification for the REST API
+#[must_use]
 pub fn get_openapi_spec() -> serde_json::Value {
     json!({
         "openapi": "3.0.0",

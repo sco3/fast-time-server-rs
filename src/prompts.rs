@@ -4,14 +4,14 @@
 // Copyright 2025
 // SPDX-License-Identifier: Apache-2.0
 
+use std::fmt::Write;
+
 /// Generate compare timezones prompt
+#[must_use]
 pub fn generate_compare_timezones_prompt(timezones: &str, reference_time: Option<&str>) -> String {
-    let mut prompt = format!(
-        "Compare the current time across these time zones: {}\n",
-        timezones
-    );
+    let mut prompt = format!("Compare the current time across these time zones: {timezones}\n");
     if let Some(ref_time) = reference_time {
-        prompt.push_str(&format!("Reference time: {}\n", ref_time));
+        let _ = writeln!(prompt, "Reference time: {ref_time}");
     }
     prompt.push_str("\nShow:\n");
     prompt.push_str("1. The current time in each timezone\n");
@@ -22,6 +22,7 @@ pub fn generate_compare_timezones_prompt(timezones: &str, reference_time: Option
 }
 
 /// Generate schedule meeting prompt
+#[must_use]
 pub fn generate_schedule_meeting_prompt(
     participants: &str,
     duration: Option<&str>,
@@ -33,23 +34,23 @@ pub fn generate_schedule_meeting_prompt(
     let date_range = date_range.unwrap_or("next 7 days");
 
     format!(
-        "Find the best meeting time for participants in: {}\n\n\
+        "Find the best meeting time for participants in: {participants}\n\n\
         Meeting details:\n\
-        - Duration: {} minutes\n\
-        - Preferred hours: {} local time\n\
-        - Date range: {}\n",
-        participants, duration, preferred_hours, date_range
+        - Duration: {duration} minutes\n\
+        - Preferred hours: {preferred_hours} local time\n\
+        - Date range: {date_range}\n"
     )
 }
 
 /// Generate convert time detailed prompt
+#[must_use]
 pub fn generate_convert_time_detailed_prompt(
     time: &str,
     from_tz: &str,
     to_tzs: &str,
     include_context: bool,
 ) -> String {
-    let mut prompt = format!("Convert {} from {} to: {}\n", time, from_tz, to_tzs);
+    let mut prompt = format!("Convert {time} from {from_tz} to: {to_tzs}\n");
 
     if include_context {
         prompt.push_str("\nAlso provide:\n");

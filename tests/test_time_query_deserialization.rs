@@ -20,7 +20,7 @@ fn test_time_query_deserialization() {
     assert_eq!(query.timezone.unwrap(), "America/New_York");
 
     // Test without timezone (should be None)
-    let json_without_tz = r#"{}"#;
+    let json_without_tz = r"{}";
     let query: TimeQuery =
         serde_json::from_str(json_without_tz).expect("Should deserialize without timezone");
 

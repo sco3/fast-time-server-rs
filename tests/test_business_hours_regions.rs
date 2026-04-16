@@ -18,39 +18,33 @@ fn test_business_hours_regions() {
     for (region_name, region_data) in regions {
         let region_obj = region_data
             .as_object()
-            .unwrap_or_else(|| panic!("{} should be an object", region_name));
+            .unwrap_or_else(|| panic!("{region_name} should be an object"));
 
         assert!(
             region_obj.contains_key("standard_hours"),
-            "{} should have standard_hours",
-            region_name
+            "{region_name} should have standard_hours"
         );
         assert!(
             region_obj.contains_key("lunch_break"),
-            "{} should have lunch_break",
-            region_name
+            "{region_name} should have lunch_break"
         );
         assert!(
             region_obj.contains_key("working_days"),
-            "{} should have working_days",
-            region_name
+            "{region_name} should have working_days"
         );
 
         // Verify types
         assert!(
             region_obj.get("standard_hours").unwrap().is_string(),
-            "{} standard_hours should be string",
-            region_name
+            "{region_name} standard_hours should be string"
         );
         assert!(
             region_obj.get("lunch_break").unwrap().is_string(),
-            "{} lunch_break should be string",
-            region_name
+            "{region_name} lunch_break should be string"
         );
         assert!(
             region_obj.get("working_days").unwrap().is_array(),
-            "{} working_days should be array",
-            region_name
+            "{region_name} working_days should be array"
         );
     }
 }

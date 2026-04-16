@@ -37,10 +37,10 @@ pub struct AppState {
 /// assert_eq!(parse_log_level("INFO"), "info");
 /// assert_eq!(parse_log_level("invalid"), "info"); // defaults to info
 /// ```
+#[must_use]
 pub fn parse_log_level(level: &str) -> &'static str {
     match level.to_lowercase().as_str() {
         "debug" => "debug",
-        "info" => "info",
         "warn" | "warning" => "warn",
         "error" => "error",
         "none" | "off" => "off",
@@ -61,9 +61,9 @@ pub fn parse_log_level(level: &str) -> &'static str {
 /// assert_eq!(format_listen_address(None, "0.0.0.0", 8080), "0.0.0.0:8080");
 /// assert_eq!(format_listen_address(None, "localhost", 3000), "localhost:3000");
 /// ```
+#[must_use]
 pub fn format_listen_address(addr: Option<&str>, host: &str, port: u16) -> String {
-    addr.map(String::from)
-        .unwrap_or_else(|| format!("{}:{}", host, port))
+    addr.map_or_else(|| format!("{host}:{port}"), String::from)
 }
 
 /// Build health check response JSON
@@ -76,6 +76,7 @@ pub fn format_listen_address(addr: Option<&str>, host: &str, port: u16) -> Strin
 /// assert_eq!(response.get("status").unwrap().as_str().unwrap(), "healthy");
 /// assert_eq!(response.get("uptime_seconds").unwrap().as_u64().unwrap(), 42);
 /// ```
+#[must_use]
 pub fn build_health_response(uptime_secs: u64) -> serde_json::Value {
     serde_json::json!({
         "status": "healthy",
@@ -94,6 +95,7 @@ pub fn build_health_response(uptime_secs: u64) -> serde_json::Value {
 /// assert_eq!(response.get("version").unwrap().as_str().unwrap(), "1.0.0");
 /// assert_eq!(response.get("mcp_version").unwrap().as_str().unwrap(), "1.0");
 /// ```
+#[must_use]
 pub fn build_version_response(name: &str, version: &str) -> serde_json::Value {
     serde_json::json!({
         "name": name,
@@ -102,7 +104,10 @@ pub fn build_version_response(name: &str, version: &str) -> serde_json::Value {
     })
 }
 impl AppState {
-    /// Load timezone with caching (similar to Go's loadLocation function)
+    /// Load timezone with caching (similar to Go's `loadLocation` function)
+    ///
+    /// # Errors
+    /// Returns an error if the timezone name is invalid.
     pub async fn load_timezone(&self, name: &str) -> Result<chrono_tz::Tz, String> {
         // Check cache first
         {
@@ -115,7 +120,7 @@ impl AppState {
         // Parse and cache
         let tz: chrono_tz::Tz = name
             .parse()
-            .map_err(|_| format!("invalid timezone {}", name))?;
+            .map_err(|_| format!("invalid timezone {name}"))?;
         self.timezone_cache
             .write()
             .await
