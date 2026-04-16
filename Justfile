@@ -36,23 +36,6 @@ coverage:
     cargo llvm-cov --tests --html
     @echo "Coverage report generated in target/llvm-cov/html/index.html"
 
-# Generate Go test coverage
-coverage-go:
-    @echo "Generating Go test coverage..."
-    @mkdir -p coverage
-    go test -coverprofile=coverage/go-coverage.out ./...
-    go tool cover -html=coverage/go-coverage.out -o coverage/go-coverage.html
-    @echo "Go coverage report generated in coverage/go-coverage.html"
-
-# Generate coverage reports for both Rust and Go
-coverage-all:
-    @just coverage
-    @just coverage-go
-    @echo ""
-    @echo "All coverage reports generated:"
-    @echo "  - Rust: target/llvm-cov/html/index.html"
-    @echo "  - Go: coverage/go-coverage.html"
-
 # Clean build artifacts
 clean:
     cargo clean
