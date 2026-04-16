@@ -296,3 +296,8 @@ make test       # Unit tests (race detection)
 make coverage   # HTML coverage report
 make bench      # Go benchmarks
 ```
+
+
+### Contributing
+* Avoid colorful emojis in all text, commits, and documentation.
+* Do not use ANSI escape sequences or terminal color styling in outputs.
