@@ -30,7 +30,7 @@ pub async fn get_system_time_cached(
 ) -> Result<String, String> {
     let tz = app_state.load_timezone(timezone).await?;
     let now = chrono::Utc::now().with_timezone(&tz);
-    Ok(now.format("%Y-%m-%dT%H:%M:%SZ").to_string())
+    Ok(now.to_rfc3339_opts(chrono::SecondsFormat::Secs, true))
 }
 
 /// Convert time between timezones (non-cached version)
