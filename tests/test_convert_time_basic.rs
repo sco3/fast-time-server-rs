@@ -16,8 +16,16 @@ fn test_convert_time_basic() {
     let converted_dt = DateTime::parse_from_rfc3339(&converted).expect("Output not RFC3339");
 
     // Print for visibility if it fails
-    println!("Original:  {} (TS: {})", original_dt, original_dt.timestamp());
-    println!("Converted: {} (TS: {})", converted_dt, converted_dt.timestamp());
+    println!(
+        "Original:  {} (TS: {})",
+        original_dt,
+        original_dt.timestamp()
+    );
+    println!(
+        "Converted: {} (TS: {})",
+        converted_dt,
+        converted_dt.timestamp()
+    );
 
     assert_eq!(
         original_dt.timestamp(),

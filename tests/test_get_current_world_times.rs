@@ -47,17 +47,11 @@ fn test_get_current_world_times() {
         "Dubai",
     ];
     for city in expected_cities {
-        assert!(
-            times_obj.contains_key(city),
-            "Should have time for {city}"
-        );
+        assert!(times_obj.contains_key(city), "Should have time for {city}");
         let time_str = times_obj
             .get(city)
             .and_then(|v| v.as_str())
             .expect("City time should be a string");
-        assert!(
-            !time_str.is_empty(),
-            "Time for {city} should not be empty"
-        );
+        assert!(!time_str.is_empty(), "Time for {city} should not be empty");
     }
 }

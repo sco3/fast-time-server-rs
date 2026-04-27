@@ -35,7 +35,10 @@ async fn handle_get_time(
     let timezone = params.timezone.unwrap_or_else(|| "UTC".to_string());
 
     // Get timezone from cache
-    let tz = state.load_timezone(&timezone).await.map_err(|_| StatusCode::BAD_REQUEST)?;
+    let tz = state
+        .load_timezone(&timezone)
+        .await
+        .map_err(|_| StatusCode::BAD_REQUEST)?;
     let now = chrono::Utc::now().with_timezone(&tz);
     let utc = chrono::Utc::now();
 
@@ -53,7 +56,10 @@ async fn handle_get_time_with_path(
     Path(timezone): Path<String>,
 ) -> Result<Json<TimeResponse>, StatusCode> {
     // Get timezone from cache
-    let tz = state.load_timezone(&timezone).await.map_err(|_| StatusCode::BAD_REQUEST)?;
+    let tz = state
+        .load_timezone(&timezone)
+        .await
+        .map_err(|_| StatusCode::BAD_REQUEST)?;
     let now = chrono::Utc::now().with_timezone(&tz);
     let utc = chrono::Utc::now();
 
@@ -140,10 +146,7 @@ async fn handle_execute_prompt(
             )
         }
         "convert_time_detailed" => {
-            let time = payload
-                .arguments
-                .get("time")
-                .map_or("", |s| s.as_str());
+            let time = payload.arguments.get("time").map_or("", |s| s.as_str());
             let from_timezone = payload
                 .arguments
                 .get("from_timezone")

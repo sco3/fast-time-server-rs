@@ -16,8 +16,5 @@ fn test_get_system_time_timezone() {
 
     // Verify it's valid RFC3339 format
     let parsed = DateTime::parse_from_rfc3339(&time_str);
-    assert!(
-        parsed.is_ok(),
-        "Should be valid RFC3339 format: {time_str}"
-    );
+    assert!(parsed.is_ok(), "Should be valid RFC3339 format: {time_str}");
 }

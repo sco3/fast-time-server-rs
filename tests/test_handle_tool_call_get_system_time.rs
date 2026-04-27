@@ -18,7 +18,10 @@ fn test_handle_tool_call_get_system_time() {
         .expect("Result should contain a text string in content[0].text");
 
     // Verify it looks like a timestamp (contains 'T')
-    assert!(time_str.contains('T'), "Output should be an ISO 8601/RFC 3339 string");
+    assert!(
+        time_str.contains('T'),
+        "Output should be an ISO 8601/RFC 3339 string"
+    );
 
     // Test with default UTC
     let args_empty = json!({});
@@ -27,9 +30,7 @@ fn test_handle_tool_call_get_system_time() {
     assert!(result_utc.is_ok(), "Should work with no timezone argument");
 
     let value_utc = result_utc.unwrap();
-    let time_utc_str = value_utc["content"][0]["text"]
-        .as_str()
-        .unwrap();
+    let time_utc_str = value_utc["content"][0]["text"].as_str().unwrap();
 
     // UTC results usually end in Z or +00:00
     assert!(time_utc_str.ends_with('Z') || time_utc_str.contains("+00:00"));

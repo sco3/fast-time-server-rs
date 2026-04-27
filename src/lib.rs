@@ -13,7 +13,7 @@ pub mod openapi;
 pub mod prompts;
 pub mod resources;
 pub mod tools;
-mod tools_list;
+pub mod tools_list;
 
 // Re-export AppState for tests and rest_handlers
 #[derive(Clone)]

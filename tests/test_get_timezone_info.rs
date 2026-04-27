@@ -41,14 +41,23 @@ fn test_get_timezone_info() {
         ny.get("name").and_then(serde_json::Value::as_str).unwrap(),
         "Eastern Time"
     );
-    assert_eq!(ny.get("offset").and_then(serde_json::Value::as_str).unwrap(), "-05:00");
+    assert_eq!(
+        ny.get("offset")
+            .and_then(serde_json::Value::as_str)
+            .unwrap(),
+        "-05:00"
+    );
     assert!(ny.get("dst").and_then(serde_json::Value::as_bool).unwrap());
     assert_eq!(
-        ny.get("abbreviation").and_then(serde_json::Value::as_str).unwrap(),
+        ny.get("abbreviation")
+            .and_then(serde_json::Value::as_str)
+            .unwrap(),
         "EST/EDT"
     );
     assert_eq!(
-        ny.get("population").and_then(serde_json::Value::as_i64).unwrap(),
+        ny.get("population")
+            .and_then(serde_json::Value::as_i64)
+            .unwrap(),
         141_000_000
     );
 

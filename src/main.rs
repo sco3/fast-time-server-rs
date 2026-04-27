@@ -28,10 +28,9 @@ mod prompts;
 mod resources;
 mod rest_handlers;
 mod tools;
-mod tools_list;
 
+use fast_time_server::tools_list::get_tools_list;
 use mcp::*;
-use tools_list::get_tools_list;
 
 const APP_NAME: &str = "fast-time-server";
 const APP_VERSION: &str = "1.5.0";
