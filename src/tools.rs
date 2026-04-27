@@ -17,7 +17,7 @@ pub fn get_system_time(timezone: &str) -> Result<String, String> {
         .parse()
         .map_err(|_| format!("Invalid timezone: {timezone}"))?;
     let now = chrono::Utc::now().with_timezone(&tz);
-    Ok(now.format("%Y-%m-%dT%H:%M:%SZ").to_string())
+    Ok(now.to_rfc3339_opts(chrono::SecondsFormat::Secs, true))
 }
 
 /// Get current system time in specified timezone (cached version)
