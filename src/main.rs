@@ -14,6 +14,7 @@ use axum::{
     Json, Router,
 };
 use clap::Parser;
+
 use std::collections::HashMap;
 use std::convert::Infallible;
 use std::sync::Arc;
@@ -27,8 +28,10 @@ mod prompts;
 mod resources;
 mod rest_handlers;
 mod tools;
+mod tools_list;
 
 use mcp::*;
+use tools_list::get_tools_list;
 
 const APP_NAME: &str = "fast-time-server";
 const APP_VERSION: &str = "1.5.0";
@@ -199,63 +202,7 @@ async fn run_stdio_mode(_state: AppState) -> anyhow::Result<()> {
             }
             Some("tools/list") => {
                 info!("Handling tools/list request");
-                JsonRpcResponse::success(
-                    id,
-                    serde_json::json!({
-                        "tools": [
-                            {
-                                "name": "get_system_time",
-                                "description": "Get current system time in specified timezone",
-                                "inputSchema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "timezone": {
-                                            "type": "string",
-                                            "description": "IANA timezone name (e.g., 'America/New_York', 'Europe/London'). Defaults to UTC"
-                                        }
-                                    },
-                                    "required": []
-                                },
-                                "annotations": {
-                                    "title": "Get System Time",
-                                    "readOnlyHint": true,
-                                    "destructiveHint": false,
-                                    "idempotentHint": false,
-                                    "openWorldHint": false
-                                }
-                            },
-                            {
-                                "name": "convert_time",
-                                "description": "Convert time between different timezones",
-                                "inputSchema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "time": {
-                                            "type": "string",
-                                            "description": "Time to convert in RFC3339 format or common formats like '2006-01-02 15:04:05'"
-                                        },
-                                        "source_timezone": {
-                                            "type": "string",
-                                            "description": "Source IANA timezone name"
-                                        },
-                                        "target_timezone": {
-                                            "type": "string",
-                                            "description": "Target IANA timezone name"
-                                        }
-                                    },
-                                    "required": ["time", "source_timezone", "target_timezone"]
-                                },
-                                "annotations": {
-                                    "title": "Convert Time",
-                                    "readOnlyHint": true,
-                                    "destructiveHint": false,
-                                    "idempotentHint": true,
-                                    "openWorldHint": false
-                                }
-                            }
-                        ]
-                    }),
-                )
+                JsonRpcResponse::success(id, get_tools_list())
             }
             Some("resources/list") => {
                 info!("Handling resources/list request");
@@ -275,10 +222,7 @@ async fn run_stdio_mode(_state: AppState) -> anyhow::Result<()> {
                 info!("Handling resources/read request");
                 let params = request.get("params");
                 if let Some(params_obj) = params {
-                    let resource_uri = params_obj
-                        .get("uri")
-                        .and_then(|v| v.as_str())
-                        .unwrap_or("");
+                    let resource_uri = params_obj.get("uri").and_then(|v| v.as_str()).unwrap_or("");
 
                     let response = match resource_uri {
                         "timezone://info" => {
@@ -341,13 +285,11 @@ async fn run_stdio_mode(_state: AppState) -> anyhow::Result<()> {
                                 }),
                             )
                         }
-                        _ => {
-                            JsonRpcResponse::error(
-                                id,
-                                -32000,
-                                format!("Resource not found: {resource_uri}"),
-                            )
-                        }
+                        _ => JsonRpcResponse::error(
+                            id,
+                            -32000,
+                            format!("Resource not found: {resource_uri}"),
+                        ),
                     };
                     response
                 } else {
@@ -467,8 +409,6 @@ async fn handle_version() -> Json<serde_json::Value> {
     }))
 }
 
-
-
 async fn handle_jsonrpc(
     State(state): State<AppState>,
     Json(request): Json<serde_json::Value>,
@@ -484,63 +424,7 @@ async fn handle_jsonrpc(
                 "capabilities": {"tools": {}, "resources": {}, "prompts": {}}, "serverInfo": {"name": APP_NAME, "version": APP_VERSION}
             }),
         ),
-        "tools/list" => JsonRpcResponse::success(
-            id,
-            serde_json::json!({
-                "tools": [
-                    {
-                        "name": "get_system_time",
-                        "description": "Get current system time in specified timezone",
-                        "inputSchema": {
-                            "type": "object",
-                            "properties": {
-                                "timezone": {
-                                    "type": "string",
-                                    "description": "IANA timezone name (e.g., 'America/New_York', 'Europe/London'). Defaults to UTC"
-                                }
-                            },
-                            "required": []
-                        },
-                        "annotations": {
-                            "title": "Get System Time",
-                            "readOnlyHint": true,
-                            "destructiveHint": false,
-                            "idempotentHint": false,
-                            "openWorldHint": false
-                        }
-                    },
-                    {
-                        "name": "convert_time",
-                        "description": "Convert time between different timezones",
-                        "inputSchema": {
-                            "type": "object",
-                            "properties": {
-                                "time": {
-                                    "type": "string",
-                                    "description": "Time to convert in RFC3339 format or common formats like '2006-01-02 15:04:05'"
-                                },
-                                "source_timezone": {
-                                    "type": "string",
-                                    "description": "Source IANA timezone name"
-                                },
-                                "target_timezone": {
-                                    "type": "string",
-                                    "description": "Target IANA timezone name"
-                                }
-                            },
-                            "required": ["time", "source_timezone", "target_timezone"]
-                        },
-                        "annotations": {
-                            "title": "Convert Time",
-                            "readOnlyHint": true,
-                            "destructiveHint": false,
-                            "idempotentHint": true,
-                            "openWorldHint": false
-                        }
-                    }
-                ]
-            }),
-        ),
+        "tools/list" => JsonRpcResponse::success(id, get_tools_list()),
         "resources/list" => JsonRpcResponse::success(
             id,
             serde_json::json!({
