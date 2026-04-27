@@ -34,6 +34,8 @@ const APP_NAME: &str = "fast-time-server";
 const APP_VERSION: &str = "1.5.0";
 const DEFAULT_PORT: u16 = 8080;
 
+const MCP_VERSION: &'static str = "2025-03-26";
+
 #[derive(Parser, Debug)]
 #[command(name = APP_NAME, version = APP_VERSION)]
 struct Args {
@@ -189,7 +191,7 @@ async fn run_stdio_mode(_state: AppState) -> anyhow::Result<()> {
                 JsonRpcResponse::success(
                     id,
                     serde_json::json!({
-                        "protocolVersion": "1.0",
+                        "protocolVersion": MCP_VERSION,
                         "capabilities": {"tools": {}, "resources": {}, "prompts": {}},
                         "serverInfo": {"name": APP_NAME, "version": APP_VERSION}
                     }),
@@ -201,8 +203,56 @@ async fn run_stdio_mode(_state: AppState) -> anyhow::Result<()> {
                     id,
                     serde_json::json!({
                         "tools": [
-                            {"name": "get_system_time", "description": "Get current system time"},
-                            {"name": "convert_time", "description": "Convert time between timezones"}
+                            {
+                                "name": "get_system_time",
+                                "description": "Get current system time in specified timezone",
+                                "inputSchema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "timezone": {
+                                            "type": "string",
+                                            "description": "IANA timezone name (e.g., 'America/New_York', 'Europe/London'). Defaults to UTC"
+                                        }
+                                    },
+                                    "required": []
+                                },
+                                "annotations": {
+                                    "title": "Get System Time",
+                                    "readOnlyHint": true,
+                                    "destructiveHint": false,
+                                    "idempotentHint": false,
+                                    "openWorldHint": false
+                                }
+                            },
+                            {
+                                "name": "convert_time",
+                                "description": "Convert time between different timezones",
+                                "inputSchema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "time": {
+                                            "type": "string",
+                                            "description": "Time to convert in RFC3339 format or common formats like '2006-01-02 15:04:05'"
+                                        },
+                                        "source_timezone": {
+                                            "type": "string",
+                                            "description": "Source IANA timezone name"
+                                        },
+                                        "target_timezone": {
+                                            "type": "string",
+                                            "description": "Target IANA timezone name"
+                                        }
+                                    },
+                                    "required": ["time", "source_timezone", "target_timezone"]
+                                },
+                                "annotations": {
+                                    "title": "Convert Time",
+                                    "readOnlyHint": true,
+                                    "destructiveHint": false,
+                                    "idempotentHint": true,
+                                    "openWorldHint": false
+                                }
+                            }
                         ]
                     }),
                 )
@@ -417,6 +467,8 @@ async fn handle_version() -> Json<serde_json::Value> {
     }))
 }
 
+
+
 async fn handle_jsonrpc(
     State(state): State<AppState>,
     Json(request): Json<serde_json::Value>,
@@ -428,7 +480,7 @@ async fn handle_jsonrpc(
         "initialize" => JsonRpcResponse::success(
             id,
             serde_json::json!({
-                "protocolVersion": "1.0",
+                "protocolVersion": MCP_VERSION,
                 "capabilities": {"tools": {}, "resources": {}, "prompts": {}}, "serverInfo": {"name": APP_NAME, "version": APP_VERSION}
             }),
         ),
@@ -436,8 +488,56 @@ async fn handle_jsonrpc(
             id,
             serde_json::json!({
                 "tools": [
-                    {"name": "get_system_time", "description": "Get current system time"},
-                    {"name": "convert_time", "description": "Convert time between timezones"}
+                    {
+                        "name": "get_system_time",
+                        "description": "Get current system time in specified timezone",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "timezone": {
+                                    "type": "string",
+                                    "description": "IANA timezone name (e.g., 'America/New_York', 'Europe/London'). Defaults to UTC"
+                                }
+                            },
+                            "required": []
+                        },
+                        "annotations": {
+                            "title": "Get System Time",
+                            "readOnlyHint": true,
+                            "destructiveHint": false,
+                            "idempotentHint": false,
+                            "openWorldHint": false
+                        }
+                    },
+                    {
+                        "name": "convert_time",
+                        "description": "Convert time between different timezones",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "time": {
+                                    "type": "string",
+                                    "description": "Time to convert in RFC3339 format or common formats like '2006-01-02 15:04:05'"
+                                },
+                                "source_timezone": {
+                                    "type": "string",
+                                    "description": "Source IANA timezone name"
+                                },
+                                "target_timezone": {
+                                    "type": "string",
+                                    "description": "Target IANA timezone name"
+                                }
+                            },
+                            "required": ["time", "source_timezone", "target_timezone"]
+                        },
+                        "annotations": {
+                            "title": "Convert Time",
+                            "readOnlyHint": true,
+                            "destructiveHint": false,
+                            "idempotentHint": true,
+                            "openWorldHint": false
+                        }
+                    }
                 ]
             }),
         ),

@@ -1,5 +1,5 @@
 [package]
-name = "fast-time-server"
+name = "fast-time-server-rs"
 version = "1.5.0"
 edition = "2021"
 rust-version = "1.75"

@@ -17,7 +17,7 @@ pub fn get_system_time(timezone: &str) -> Result<String, String> {
         .parse()
         .map_err(|_| format!("Invalid timezone: {timezone}"))?;
     let now = chrono::Utc::now().with_timezone(&tz);
-    Ok(now.to_rfc3339())
+    Ok(now.format("%Y-%m-%dT%H:%M:%SZ").to_string())
 }
 
 /// Get current system time in specified timezone (cached version)
@@ -30,7 +30,7 @@ pub async fn get_system_time_cached(
 ) -> Result<String, String> {
     let tz = app_state.load_timezone(timezone).await?;
     let now = chrono::Utc::now().with_timezone(&tz);
-    Ok(now.to_rfc3339())
+    Ok(now.format("%Y-%m-%dT%H:%M:%SZ").to_string())
 }
 
 /// Convert time between timezones (non-cached version)
@@ -69,7 +69,7 @@ pub fn convert_time(time_str: &str, source_tz: &str, target_tz: &str) -> Result<
     };
 
     let converted = parsed_time.with_timezone(&target);
-    Ok(converted.to_rfc3339())
+    Ok(converted.format("%Y-%m-%dT%H:%M:%SZ").to_string())
 }
 
 /// Convert time between timezones (cached version)
@@ -109,7 +109,7 @@ pub async fn convert_time_cached(
     };
 
     let converted = parsed_time.with_timezone(&target);
-    Ok(converted.to_rfc3339())
+    Ok(converted.format("%Y-%m-%dT%H:%M:%SZ").to_string())
 }
 
 /// Handle MCP tool call (non-cached version for stdio mode)
@@ -127,7 +127,14 @@ pub fn handle_tool_call(
                 .and_then(|v| v.as_str())
                 .unwrap_or("UTC");
             let time = get_system_time(timezone)?;
-            Ok(json!(time))
+            Ok(json!({
+                "content": [
+                    {
+                        "type": "text",
+                        "text": time
+                    }
+                ]
+            }))
         }
         "convert_time" => {
             let time = arguments
@@ -144,7 +151,14 @@ pub fn handle_tool_call(
                 .ok_or("target_timezone parameter is required")?;
 
             let converted = convert_time(time, source_tz, target_tz)?;
-            Ok(json!(converted))
+            Ok(json!({
+                "content": [
+                    {
+                        "type": "text",
+                        "text": converted
+                    }
+                ]
+            }))
         }
         _ => Err(format!("Unknown tool: {name}")),
     }
@@ -166,7 +180,14 @@ pub async fn handle_tool_call_cached(
                 .and_then(|v| v.as_str())
                 .unwrap_or("UTC");
             let time = get_system_time_cached(timezone, app_state).await?;
-            Ok(json!(time))
+            Ok(json!({
+                "content": [
+                    {
+                        "type": "text",
+                        "text": time
+                    }
+                ]
+            }))
         }
         "convert_time" => {
             let time = arguments
@@ -183,7 +204,14 @@ pub async fn handle_tool_call_cached(
                 .ok_or("target_timezone parameter is required")?;
 
             let converted = convert_time_cached(time, source_tz, target_tz, app_state).await?;
-            Ok(json!(converted))
+            Ok(json!({
+                "content": [
+                    {
+                        "type": "text",
+                        "text": converted
+                    }
+                ]
+            }))
         }
         _ => Err(format!("Unknown tool: {name}")),
     }
