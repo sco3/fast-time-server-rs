@@ -16,5 +16,16 @@ fn test_handle_tool_call_convert_time() {
     assert!(result.is_ok(), "Should successfully call convert_time");
 
     let value = result.unwrap();
-    assert!(value.is_string(), "Result should be a string");
+    print!("value {value}");
+    // 1. Verify the 'content' array exists and isn't empty
+    let content = value.get("content").and_then(|c| c.as_array())
+        .expect("Result should have a 'content' array");
+
+    // 2. Extract the text from the first content block
+    let time_text = content[0].get("text").and_then(|t| t.as_str())
+        .expect("First content block should have a 'text' string");
+
+    // 3. Now perform your assertions on the actual time string
+    assert!(time_text.contains("2025-06-21T12:00:00"), "Time should be 12:00 NY time");
+    assert!(time_text.contains("-04:00"), "Should have the correct New York summer offset");
 }

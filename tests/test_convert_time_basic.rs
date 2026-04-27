@@ -5,23 +5,23 @@ use fast_time_server::tools::convert_time;
 
 #[test]
 fn test_convert_time_basic() {
-    // Convert 16:00 UTC to America/New_York (should be 12:00 or 11:00 depending on DST)
-    let result = convert_time("2025-06-21T16:00:00Z", "UTC", "America/New_York");
+    let input_str = "2025-06-21T16:00:00Z";
+    let result = convert_time(input_str, "UTC", "America/New_York");
 
     assert!(result.is_ok(), "Should successfully convert time");
-
     let converted = result.unwrap();
 
-    // Verify it's valid RFC3339 format
-    let parsed = DateTime::parse_from_rfc3339(&converted);
-    assert!(
-        parsed.is_ok(),
-        "Should be valid RFC3339 format: {converted}"
-    );
+    // Parse both
+    let original_dt = DateTime::parse_from_rfc3339(input_str).unwrap();
+    let converted_dt = DateTime::parse_from_rfc3339(&converted).expect("Output not RFC3339");
 
-    // Verify it contains timezone offset for New York
-    assert!(
-        converted.contains("-04:00") || converted.contains("-05:00"),
-        "Should have NY timezone offset: {converted}"
+    // Print for visibility if it fails
+    println!("Original:  {} (TS: {})", original_dt, original_dt.timestamp());
+    println!("Converted: {} (TS: {})", converted_dt, converted_dt.timestamp());
+
+    assert_eq!(
+        original_dt.timestamp(),
+        converted_dt.timestamp(),
+        "The absolute moment in time changed! Check if convert_time is double-applying offsets."
     );
 }

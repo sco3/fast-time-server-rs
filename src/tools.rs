@@ -4,7 +4,7 @@
 // Copyright 2025
 // SPDX-License-Identifier: Apache-2.0
 
-use chrono::{DateTime, TimeZone};
+use chrono::{DateTime, SecondsFormat, TimeZone};
 use chrono_tz::Tz;
 use serde_json::json;
 
@@ -69,7 +69,7 @@ pub fn convert_time(time_str: &str, source_tz: &str, target_tz: &str) -> Result<
     };
 
     let converted = parsed_time.with_timezone(&target);
-    Ok(converted.format("%Y-%m-%dT%H:%M:%SZ").to_string())
+    Ok(converted.to_rfc3339_opts(SecondsFormat::Millis, true))
 }
 
 /// Convert time between timezones (cached version)
