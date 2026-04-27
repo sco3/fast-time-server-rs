@@ -1,5 +1,5 @@
 use serde_json::Value;
-
+#[must_use]
 pub fn get_tools_list() -> Value {
     serde_json::json!({
         "tools": [

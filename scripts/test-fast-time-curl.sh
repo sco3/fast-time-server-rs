@@ -21,13 +21,13 @@ LIST='{"jsonrpc":"2.0","id":2,"method":"tools/list"}'
 CALL='{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"get_system_time","arguments":{"timezone":"UTC"}}}'
 
 
-echo $(curl -v -N $HEALTH)
+echo $(curl  -N $HEALTH)
 
-curl -v -N "$URL" "${HEADERS[@]}" -d "$INIT" -D /tmp/headers.txt
+curl  -N "$URL" "${HEADERS[@]}" -d "$INIT" -D /tmp/headers.txt
 # Mcp-Session-Id: mcp-session-7f1fdea1-49e9-40cf-b459-2ba0a57f8512
 session=$(awk  -F: '($1=="Mcp-Session-Id"){print $2}' /tmp/headers.txt | tr -d ' \r')
 
-printf "\n--- %s\n" $session
+printf "\n--- session: %s\n" $session
 
 HEADERS=(
     -H "Mcp-Session-Id: ${session}"
@@ -42,4 +42,4 @@ printf "\n---\n"
 
 curl  -N "$URL" "${HEADERS[@]}" -d "$LIST" | yq -P 
 printf "\n---\n"
-curl  -N "$URL" "${HEADERS[@]}" -d "$CALL" 
+curl  -N "$URL" "${HEADERS[@]}" -d "$CALL"  | yq -P 
