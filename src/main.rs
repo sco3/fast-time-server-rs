@@ -34,7 +34,7 @@ const APP_NAME: &str = "fast-time-server";
 const APP_VERSION: &str = "1.5.0";
 const DEFAULT_PORT: u16 = 8080;
 
-const MCP_VERSION: &'static str = "2025-03-26";
+const MCP_VERSION: &str = "2025-03-26";
 
 #[derive(Parser, Debug)]
 #[command(name = APP_NAME, version = APP_VERSION)]
